@@ -212,6 +212,8 @@ class StoreService {
     }
     this.activeEventId = eventId;
     this.saveToStorage();
+    this.refreshGuests(eventId);
+    this.notify();
   }
 
   public createEvent(data: Omit<EventItem, 'id' | 'criadoEm' | 'atualizadoEm'>): EventItem {
@@ -234,6 +236,8 @@ class StoreService {
     }
 
     this.activeEventId = newId;
+    this.guests = []; // Novo evento inicia sem convidados
+
     this.logAudit({
       eventId: newId,
       eventNome: newEvent.nome,
@@ -242,6 +246,20 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    // Persistir no banco de dados PostgreSQL
+    api.createEvent({
+      ...newEvent,
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao persistir evento no PostgreSQL:', err);
+    });
+
     return newEvent;
   }
 
@@ -268,6 +286,20 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    const user = this.getActiveUser();
+    api.updateEvent(eventId, {
+      ...data,
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao atualizar evento no PostgreSQL:', err);
+    });
+
     return updated;
   }
 
@@ -291,6 +323,19 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    const user = this.getActiveUser();
+    api.closeEvent(eventId, {
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao encerrar evento no PostgreSQL:', err);
+    });
+
     return event;
   }
 
@@ -313,6 +358,19 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    const user = this.getActiveUser();
+    api.reopenEvent(eventId, {
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao reabrir evento no PostgreSQL:', err);
+    });
+
     return event;
   }
 
@@ -410,6 +468,25 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    const user = this.getActiveUser();
+    api.createGuest({
+      ...newGuest,
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(res => {
+      if (res && res.numero) {
+        newGuest.numero = res.numero;
+        this.saveToStorage();
+        this.notify();
+      }
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao persistir convidado no PostgreSQL:', err);
+    });
+
     return newGuest;
   }
 
@@ -567,6 +644,20 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    const user = this.getActiveUser();
+    api.updateRsvp(guestId, {
+      novoRsvp,
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao atualizar RSVP no PostgreSQL:', err);
+    });
+
     return guest;
   }
 
@@ -641,6 +732,26 @@ class StoreService {
     }
 
     this.saveToStorage();
+    this.notify();
+
+    const user = this.getActiveUser();
+    const decisaoBackend = acao === 'converter_acompanhante' ? 'manter_ambos'
+      : acao === 'desconfirmar_titular' ? 'manter_representante'
+      : acao === 'desconfirmar_representante' ? 'manter_titular'
+      : 'manter_ambos';
+
+    api.resolveConflict({
+      titularId,
+      representanteId,
+      decisao: decisaoBackend,
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao resolver conflito no PostgreSQL:', err);
+    });
   }
 
   // Credenciamento (Check-in) com proteção contra duplicidade (CA-09, CA-13)
@@ -674,6 +785,19 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    api.checkInGuest(guestId, {
+      operadorNome: currentUser.nome,
+      userId: currentUser.id,
+      userName: currentUser.nome,
+      userRole: currentUser.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao registrar check-in no PostgreSQL:', err);
+    });
+
     return guest;
   }
 
@@ -704,6 +828,18 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    api.undoCheckIn(guestId, {
+      userId: currentUser.id,
+      userName: currentUser.nome,
+      userRole: currentUser.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao estornar check-in no PostgreSQL:', err);
+    });
+
     return guest;
   }
 
@@ -740,6 +876,20 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    const user = this.getActiveUser();
+    api.updateGuest(guestId, {
+      ...allowedUpdates,
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao atualizar convidado no PostgreSQL:', err);
+    });
+
     return guest;
   }
 
@@ -766,6 +916,18 @@ class StoreService {
     });
 
     this.saveToStorage();
+    this.notify();
+
+    const user = this.getActiveUser();
+    api.deleteGuest(guestId, {
+      userId: user.id,
+      userName: user.nome,
+      userRole: user.role,
+    }).then(() => {
+      this.refreshAudit();
+    }).catch(err => {
+      console.error('Erro ao excluir convidado no PostgreSQL:', err);
+    });
   }
 
   // --- Pipeline de Importação (10 Passos - PRD Seção 6) ---

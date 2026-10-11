@@ -79,7 +79,7 @@ guestsRouter.post('/', async (req: Request, res: Response) => {
     const maxNumRes = await query('SELECT COALESCE(MAX(numero), 0) as max_num FROM guests WHERE event_id = $1', [eventId]);
     const proximoNumero = Number(maxNumRes.rows[0].max_num) + 1;
 
-    const guestId = `gst-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const guestId = req.body.id || `gst-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const now = new Date().toISOString();
 
     let papelFinal = papel;
@@ -139,6 +139,47 @@ guestsRouter.post('/', async (req: Request, res: Response) => {
     );
 
     res.status(201).json({ id: guestId, numero: proximoNumero, message: 'Convidado cadastrado com sucesso.' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Atualizar dados gerais do convidado (CA-02, CA-13)
+guestsRouter.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { nome, categoria, papel, rsvp, relacionamento, observacao, userId, userName, userRole } = req.body;
+
+    const guestRes = await query('SELECT * FROM guests WHERE id = $1 AND deleted_at IS NULL', [id]);
+    if (guestRes.rows.length === 0) return res.status(404).json({ error: 'Convidado não encontrado.' });
+
+    const guest = guestRes.rows[0];
+    await assertEventActive(guest.event_id);
+
+    const now = new Date().toISOString();
+    await query(
+      `UPDATE guests 
+       SET nome = COALESCE($1, nome),
+           categoria = COALESCE($2, categoria),
+           papel = COALESCE($3, papel),
+           rsvp = COALESCE($4, rsvp),
+           relacionamento = $5,
+           observacao = COALESCE($6, observacao),
+           updated_at = $7
+       WHERE id = $8`,
+      [
+        nome ? nome.trim() : null,
+        categoria ? categoria.trim() : null,
+        papel || null,
+        rsvp || null,
+        relacionamento !== undefined ? (relacionamento ? JSON.stringify(relacionamento) : null) : (guest.relacionamento ? JSON.stringify(guest.relacionamento) : null),
+        observacao !== undefined ? observacao : null,
+        now,
+        id,
+      ]
+    );
+
+    res.json({ message: 'Convidado atualizado com sucesso.' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

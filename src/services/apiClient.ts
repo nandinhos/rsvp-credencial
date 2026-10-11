@@ -60,6 +60,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  updateGuest: (id: string, data: Partial<Guest> & { userId?: string; userName?: string; userRole?: string }) =>
+    request<{ message: string }>(`/guests/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
   updateRsvp: (id: string, data: { novoRsvp: string; userId?: string; userName?: string; userRole?: string }) =>
     request<{ message: string; conflitoAtivo: boolean }>(`/guests/${id}/rsvp`, {
       method: 'POST',

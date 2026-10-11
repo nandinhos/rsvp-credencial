@@ -23,7 +23,7 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState<'dashboard' | 'guests' | 'checkin' | 'import' | 'audit' | 'events'>('dashboard');
 
   // Store state subscriber
-  const [, setTick] = useState(0);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
     return store.subscribe(() => setTick(t => t + 1));
   }, []);
@@ -41,11 +41,11 @@ export default function App() {
     } catch {
       return [];
     }
-  }, [activeEvent, currentUser]);
+  }, [activeEvent, currentUser, tick]);
 
   const auditLogs = useMemo(() => {
     return store.getAuditLogs();
-  }, []);
+  }, [tick]);
 
   const metrics = useMemo(() => {
     if (!activeEvent) {
