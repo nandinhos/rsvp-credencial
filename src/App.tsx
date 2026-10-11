@@ -207,6 +207,16 @@ export default function App() {
     }
   };
 
+  if (allUsers.length === 0 && !activeEvent) {
+    return (
+      <div className="min-h-screen bg-[#F6F9FC] flex flex-col items-center justify-center p-4">
+        <div className="w-10 h-10 border-3 border-[#1C4E80] border-t-transparent rounded-full animate-spin mb-3" />
+        <h2 className="text-[#0B2A4A] font-semibold text-sm">Carregando Cerimonial & RSVP...</h2>
+        <p className="text-slate-500 text-xs mt-1">Conectando ao banco de dados PostgreSQL...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F6F9FC] text-[#182738] flex flex-col font-sans">
       {/* Header com Navegação e Controles de Sessão */}

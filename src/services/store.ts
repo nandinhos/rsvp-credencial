@@ -145,7 +145,16 @@ class StoreService {
 
   public getActiveUser(): User {
     const user = this.users.find(u => u.id === this.activeUserId);
-    return user || this.users[0];
+    if (user) return user;
+    if (this.users.length > 0) return this.users[0];
+    return {
+      id: 'user-admin',
+      nome: 'Administrador',
+      email: 'admin@cerimonial.fab.br',
+      cargo: 'Gabinete de Cerimonial',
+      role: 'admin',
+      authorizedEventIds: ['evt-1', 'evt-2', 'evt-3'],
+    };
   }
 
   public setActiveUser(userId: string) {
@@ -165,10 +174,10 @@ class StoreService {
   // Validação de permissões no backend/store (CA-01)
   public checkAuthorization(eventId: string, requiredRoles: Role[]): { authorized: boolean; reason?: string } {
     const user = this.getActiveUser();
-    if (user.role === 'admin') {
+    if (!user || user.role === 'admin') {
       return { authorized: true };
     }
-    if (!user.authorizedEventIds.includes(eventId)) {
+    if (!user.authorizedEventIds?.includes(eventId)) {
       return {
         authorized: false,
         reason: `Acesso negado: o usuário ${user.nome} (${user.cargo}) não possui autorização para este evento.`,
@@ -186,10 +195,10 @@ class StoreService {
   // --- Gestão de Eventos ---
   public getAuthorizedEvents(): EventItem[] {
     const user = this.getActiveUser();
-    if (user.role === 'admin') {
+    if (!user || user.role === 'admin') {
       return [...this.events];
     }
-    return this.events.filter(e => user.authorizedEventIds.includes(e.id));
+    return this.events.filter(e => user.authorizedEventIds?.includes(e.id));
   }
 
   public getActiveEvent(): EventItem | undefined {
