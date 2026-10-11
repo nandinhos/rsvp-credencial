@@ -12,6 +12,7 @@ import {
   RSVPStatus,
   User,
 } from '../types';
+import { api } from './apiClient';
 
 const STORAGE_KEYS = {
   EVENTS: 'cerimonial_events_v1',
@@ -354,6 +355,49 @@ class StoreService {
 
   constructor() {
     this.loadFromStorage();
+    this.syncWithBackend();
+  }
+
+  public async syncWithBackend() {
+    try {
+      const [remoteEvents, remoteUsers, remoteAudit] = await Promise.all([
+        api.getEvents().catch(() => null),
+        api.getUsers().catch(() => null),
+        api.getAuditLogs().catch(() => null),
+      ]);
+
+      let changed = false;
+
+      if (remoteEvents && remoteEvents.length > 0) {
+        this.events = remoteEvents;
+        changed = true;
+      }
+      if (remoteUsers && remoteUsers.length > 0) {
+        this.users = remoteUsers;
+        changed = true;
+      }
+      if (remoteAudit && remoteAudit.length > 0) {
+        this.auditLogs = remoteAudit;
+        changed = true;
+      }
+
+      if (this.activeEventId) {
+        const remoteGuests = await api.getGuests(this.activeEventId).catch(() => null);
+        if (remoteGuests && remoteGuests.length > 0) {
+          this.guests = [
+            ...this.guests.filter(g => g.eventId !== this.activeEventId),
+            ...remoteGuests,
+          ];
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        this.saveToStorage();
+      }
+    } catch {
+      // Degradação graciosa em caso de ausência de rede
+    }
   }
 
   private loadFromStorage() {

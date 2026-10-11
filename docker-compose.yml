@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: rsvp_credencial_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rsvp_db
+    ports:
+      - "25432:5432"
+    volumes:
+      - rsvp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d rsvp_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - rsvp_network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rsvp_credencial_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/rsvp_db
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: rsvp_db
+      PORT: 3001
+      HOST: 0.0.0.0
+      VITE_API_URL: http://localhost:3001
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - rsvp_network
+
+volumes:
+  rsvp_pgdata:
+    driver: local
+
+networks:
+  rsvp_network:
+    driver: bridge
