@@ -1,0 +1,6 @@
+{
+  "name": "Cerimonial & RSVP — Gestão de Convidados e Presença",
+  "description": "Sistema premium de gestão de convidados, RSVP, acompanhantes, representantes, credenciamento e auditoria para eventos corporativos e institucionais.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
