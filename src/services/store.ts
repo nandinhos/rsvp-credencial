@@ -31,319 +31,7 @@ export const DEFAULT_CATEGORIES: EventCategory[] = [
   { id: 'cat-geral', nome: 'Convidado geral', descricao: 'Participantes sem classificação especial', cor: '#5B6E84' },
 ];
 
-// Usuários iniciais com papéis claros
-const INITIAL_USERS: User[] = [
-  {
-    id: 'user-admin',
-    nome: 'Cel. Valério Mendonça',
-    email: 'valerio.mendonca@cerimonial.fab.br',
-    cargo: 'Chefe de Cerimonial e Gabinete',
-    role: 'admin',
-    authorizedEventIds: ['evt-1', 'evt-2', 'evt-3'],
-  },
-  {
-    id: 'user-gestor',
-    nome: 'Maj. Patrícia Silveira',
-    email: 'patricia.silveira@cerimonial.fab.br',
-    cargo: 'Coordenadora Executiva de Eventos',
-    role: 'gestor',
-    authorizedEventIds: ['evt-1', 'evt-2'],
-  },
-  {
-    id: 'user-operador',
-    nome: 'Ten. Lucas Albuquerque',
-    email: 'lucas.albuquerque@cerimonial.fab.br',
-    cargo: 'Oficial de Credenciamento e Portaria',
-    role: 'operador',
-    authorizedEventIds: ['evt-1'],
-  },
-  {
-    id: 'user-leitor',
-    nome: 'Auditor Marcos Dias',
-    email: 'marcos.dias@auditoria.fab.br',
-    cargo: 'Inspetor de Auditoria e Controle',
-    role: 'leitor',
-    authorizedEventIds: ['evt-1'],
-  },
-];
-
-// Eventos iniciais
-const INITIAL_EVENTS: EventItem[] = [
-  {
-    id: 'evt-1',
-    nome: 'Solenidade Comemorativa e Outorga de Mérito Institucional',
-    dataHorario: '15 de Novembro de 2026 às 19:30',
-    local: 'Salão Nobre do Comando Geral · Brasília - DF',
-    visibilidade: 'reservado',
-    publicoEstimado: 120,
-    categorias: [...DEFAULT_CATEGORIES],
-    estado: 'ativo',
-    criadoEm: '2026-10-01T10:00:00.000Z',
-    atualizadoEm: '2026-10-10T08:00:00.000Z',
-  },
-  {
-    id: 'evt-2',
-    nome: 'Simpósio Estratégico de Liderança e Defesa Aeroespacial',
-    dataHorario: '28 de Novembro de 2026 às 08:30',
-    local: 'Auditório Santos-Dumont · Centro de Convenções',
-    visibilidade: 'publico',
-    publicoEstimado: 250,
-    categorias: [
-      ...DEFAULT_CATEGORIES,
-      { id: 'cat-palestrante', nome: 'Palestrante / Painelista', descricao: 'Conferencistas convidados', cor: '#047857' },
-    ],
-    estado: 'ativo',
-    criadoEm: '2026-10-05T14:30:00.000Z',
-    atualizadoEm: '2026-10-08T11:00:00.000Z',
-  },
-  {
-    id: 'evt-3',
-    nome: 'Reunião Plenária de Alto Comando (Ciclo Anterior)',
-    dataHorario: '12 de Setembro de 2026 às 14:00',
-    local: 'Gabinete Superior · Ala Norte',
-    visibilidade: 'reservado',
-    publicoEstimado: 40,
-    categorias: [...DEFAULT_CATEGORIES],
-    estado: 'encerrado',
-    criadoEm: '2026-08-20T09:00:00.000Z',
-    atualizadoEm: '2026-09-12T18:00:00.000Z',
-    encerradoEm: '2026-09-12T18:00:00.000Z',
-  },
-];
-
-// Convidados iniciais para o evento 1 com casos de teste realistas:
-// - Titular confirmado com acompanhante confirmado (CA-04)
-// - Acompanhante promovido a representante porque titular não confirmou (CA-05)
-// - Conflito ativo resolvível para demonstração (CA-06)
-// - Convidados com check-in e aguardando
-const INITIAL_GUESTS: Guest[] = [
-  // 1. Titular confirmado
-  {
-    id: 'gst-1',
-    eventId: 'evt-1',
-    numero: 1,
-    nome: 'Alm. Henrique Villanova',
-    categoria: 'Autoridade',
-    rsvp: 'confirmado',
-    papel: 'titular',
-    relacionamento: null,
-    presenca: 'presente',
-    checkInAt: '2026-11-15T19:12:00.000Z',
-    checkInBy: 'Ten. Lucas Albuquerque',
-    observacao: 'Mesa de honra reservada.',
-    createdAt: '2026-10-02T10:00:00.000Z',
-    updatedAt: '2026-10-10T08:00:00.000Z',
-  },
-  // 2. Acompanhante de gst-1 (titular confirmado, acompanhante confirmado -> CA-04: titular + acompanhante)
-  {
-    id: 'gst-2',
-    eventId: 'evt-1',
-    numero: 2,
-    nome: 'Sra. Beatriz Villanova',
-    categoria: 'Convidado geral',
-    rsvp: 'confirmado',
-    papel: 'acompanhante',
-    relacionamento: {
-      tipoOriginal: 'acompanhante',
-      titularId: 'gst-1',
-      titularNome: 'Alm. Henrique Villanova',
-      motivo: 'Cônjuge do titular',
-      dataVinculo: '2026-10-02T10:05:00.000Z',
-    },
-    presenca: 'presente',
-    checkInAt: '2026-11-15T19:12:15.000Z',
-    checkInBy: 'Ten. Lucas Albuquerque',
-    observacao: 'Acompanha o Alm. Villanova.',
-    createdAt: '2026-10-02T10:05:00.000Z',
-    updatedAt: '2026-10-10T08:00:00.000Z',
-  },
-  // 3. Titular não confirmado (pendente)
-  {
-    id: 'gst-3',
-    eventId: 'evt-1',
-    numero: 3,
-    nome: 'Dr. Fernando Araripe',
-    categoria: 'Diretoria',
-    rsvp: 'pendente',
-    papel: 'titular',
-    relacionamento: null,
-    presenca: 'aguardando',
-    observacao: 'Aguardando confirmação de agenda em Brasília.',
-    createdAt: '2026-10-02T11:00:00.000Z',
-    updatedAt: '2026-10-02T11:00:00.000Z',
-  },
-  // 4. Acompanhante de gst-3 confirmou enquanto titular está pendente -> PROMOVIDO A REPRESENTANTE (CA-05)
-  {
-    id: 'gst-4',
-    eventId: 'evt-1',
-    numero: 4,
-    nome: 'Dra. Maria Clara Silveira',
-    categoria: 'Diretoria',
-    rsvp: 'confirmado',
-    papel: 'representante',
-    relacionamento: {
-      tipoOriginal: 'acompanhante',
-      titularId: 'gst-3',
-      titularNome: 'Dr. Fernando Araripe',
-      motivo: 'Promovida a representante pois titular Dr. Fernando Araripe não confirmou.',
-      dataVinculo: '2026-10-02T11:30:00.000Z',
-    },
-    presenca: 'aguardando',
-    observacao: 'Representando a Diretoria de Assuntos Corporativos.',
-    createdAt: '2026-10-02T11:30:00.000Z',
-    updatedAt: '2026-10-04T09:15:00.000Z',
-  },
-  // 5 & 6. Par com conflito de representação para demonstração (CA-06):
-  // Titular confirmado E representante também confirmado!
-  {
-    id: 'gst-5',
-    eventId: 'evt-1',
-    numero: 5,
-    nome: 'Gen. Carlos Eduardo Meirelles',
-    categoria: 'Autoridade',
-    rsvp: 'confirmado',
-    papel: 'titular',
-    relacionamento: null,
-    presenca: 'aguardando',
-    conflitoAtivo: true,
-    observacao: 'Confirmou participação após o Cel. Dornelles ter sido designado representante.',
-    createdAt: '2026-10-03T09:00:00.000Z',
-    updatedAt: '2026-10-07T16:20:00.000Z',
-  },
-  {
-    id: 'gst-6',
-    eventId: 'evt-1',
-    numero: 6,
-    nome: 'Cel. Rodrigo Dornelles',
-    categoria: 'Comitê',
-    rsvp: 'confirmado',
-    papel: 'representante',
-    relacionamento: {
-      tipoOriginal: 'representante',
-      titularId: 'gst-5',
-      titularNome: 'Gen. Carlos Eduardo Meirelles',
-      motivo: 'Indicado como representante formal.',
-      dataVinculo: '2026-10-03T10:00:00.000Z',
-    },
-    presenca: 'aguardando',
-    conflitoAtivo: true,
-    observacao: 'Aguardando decisão da coordenação sobre assento duplo.',
-    createdAt: '2026-10-03T10:00:00.000Z',
-    updatedAt: '2026-10-07T16:20:00.000Z',
-  },
-  // 7. Titular que recusou expressamente (Não participará)
-  {
-    id: 'gst-7',
-    eventId: 'evt-1',
-    numero: 7,
-    nome: 'Deputada Helena Ramos',
-    categoria: 'Autoridade',
-    rsvp: 'recusado',
-    papel: 'titular',
-    relacionamento: null,
-    presenca: 'aguardando',
-    observacao: 'Informou missão oficial parlamentar no exterior.',
-    createdAt: '2026-10-03T14:00:00.000Z',
-    updatedAt: '2026-10-05T10:00:00.000Z',
-  },
-  // 8. Representante de titular que recusou
-  {
-    id: 'gst-8',
-    eventId: 'evt-1',
-    numero: 8,
-    nome: 'Dr. Lucas Tavares (Chefe de Gabinete)',
-    categoria: 'Comitê',
-    rsvp: 'confirmado',
-    papel: 'representante',
-    relacionamento: {
-      tipoOriginal: 'representante',
-      titularId: 'gst-7',
-      titularNome: 'Deputada Helena Ramos',
-      motivo: 'Designado formalmente pela Deputada Helena Ramos.',
-      dataVinculo: '2026-10-05T11:00:00.000Z',
-    },
-    presenca: 'aguardando',
-    observacao: 'Portará ofício de representação.',
-    createdAt: '2026-10-05T11:00:00.000Z',
-    updatedAt: '2026-10-05T11:00:00.000Z',
-  },
-  // 9. Convidado geral pendente
-  {
-    id: 'gst-9',
-    eventId: 'evt-1',
-    numero: 9,
-    nome: 'Prof. Cláudio Nogueira',
-    categoria: 'Convidado geral',
-    rsvp: 'pendente',
-    papel: 'titular',
-    relacionamento: null,
-    presenca: 'aguardando',
-    createdAt: '2026-10-04T08:00:00.000Z',
-    updatedAt: '2026-10-04T08:00:00.000Z',
-  },
-  // 10. Convidado geral confirmado com presença realizada
-  {
-    id: 'gst-10',
-    eventId: 'evt-1',
-    numero: 10,
-    nome: 'Eng. Juliana Marcondes',
-    categoria: 'Convidado geral',
-    rsvp: 'confirmado',
-    papel: 'titular',
-    relacionamento: null,
-    presenca: 'presente',
-    checkInAt: '2026-11-15T19:25:00.000Z',
-    checkInBy: 'Ten. Lucas Albuquerque',
-    createdAt: '2026-10-04T09:00:00.000Z',
-    updatedAt: '2026-10-10T08:00:00.000Z',
-  },
-];
-
-const INITIAL_AUDIT: AuditLog[] = [
-  {
-    id: 'aud-1',
-    timestamp: '2026-10-01T10:00:00.000Z',
-    userId: 'user-admin',
-    userName: 'Cel. Valério Mendonça',
-    userRole: 'admin',
-    eventId: 'evt-1',
-    eventNome: 'Solenidade Comemorativa e Outorga de Mérito Institucional',
-    acao: 'CRIAÇÃO_EVENTO',
-    detalhes: 'Evento criado com público estimado de 120 convidados.',
-    dispositivo: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0',
-  },
-  {
-    id: 'aud-2',
-    timestamp: '2026-10-04T09:15:00.000Z',
-    userId: 'user-gestor',
-    userName: 'Maj. Patrícia Silveira',
-    userRole: 'gestor',
-    eventId: 'evt-1',
-    eventNome: 'Solenidade Comemorativa e Outorga de Mérito Institucional',
-    guestId: 'gst-4',
-    guestNumero: 4,
-    guestNome: 'Dra. Maria Clara Silveira',
-    acao: 'PROMOCAO_REPRESENTANTE',
-    detalhes: 'Acompanhante promovida a representante pois titular Dr. Fernando Araripe permanece pendente.',
-    dispositivo: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15',
-  },
-  {
-    id: 'aud-3',
-    timestamp: '2026-10-07T16:20:00.000Z',
-    userId: 'user-gestor',
-    userName: 'Maj. Patrícia Silveira',
-    userRole: 'gestor',
-    eventId: 'evt-1',
-    eventNome: 'Solenidade Comemorativa e Outorga de Mérito Institucional',
-    guestId: 'gst-5',
-    guestNumero: 5,
-    guestNome: 'Gen. Carlos Eduardo Meirelles',
-    acao: 'DETECCAO_CONFLITO',
-    detalhes: 'Conflito detectado: Titular confirmou enquanto representante Cel. Rodrigo Dornelles já estava confirmado.',
-    dispositivo: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15',
-  },
-];
-
+// Usuários, Eventos, Convidados e Auditoria são gerenciados e persistidos exclusivamente no PostgreSQL.
 class StoreService {
   private events: EventItem[] = [];
   private guests: Guest[] = [];
@@ -352,103 +40,91 @@ class StoreService {
   private activeUserId: string = 'user-admin';
   private activeEventId: string = 'evt-1';
   private listeners: (() => void)[] = [];
+  private initialized: boolean = false;
 
   constructor() {
-    this.loadFromStorage();
-    this.syncWithBackend();
+    this.restoreSessionPreferences();
+    this.init();
   }
 
-  public async syncWithBackend() {
+  private restoreSessionPreferences() {
     try {
-      const [remoteEvents, remoteUsers, remoteAudit] = await Promise.all([
-        api.getEvents().catch(() => null),
-        api.getUsers().catch(() => null),
-        api.getAuditLogs().catch(() => null),
-      ]);
-
-      let changed = false;
-
-      if (remoteEvents && remoteEvents.length > 0) {
-        this.events = remoteEvents;
-        changed = true;
-      }
-      if (remoteUsers && remoteUsers.length > 0) {
-        this.users = remoteUsers;
-        changed = true;
-      }
-      if (remoteAudit && remoteAudit.length > 0) {
-        this.auditLogs = remoteAudit;
-        changed = true;
-      }
-
-      if (this.activeEventId) {
-        const remoteGuests = await api.getGuests(this.activeEventId).catch(() => null);
-        if (remoteGuests && remoteGuests.length > 0) {
-          this.guests = [
-            ...this.guests.filter(g => g.eventId !== this.activeEventId),
-            ...remoteGuests,
-          ];
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        this.saveToStorage();
-      }
-    } catch {
-      // Degradação graciosa em caso de ausência de rede
-    }
-  }
-
-  private loadFromStorage() {
-    try {
-      const storedEvents = localStorage.getItem(STORAGE_KEYS.EVENTS);
-      this.events = storedEvents ? JSON.parse(storedEvents) : INITIAL_EVENTS;
-
-      const storedGuests = localStorage.getItem(STORAGE_KEYS.GUESTS);
-      this.guests = storedGuests ? JSON.parse(storedGuests) : INITIAL_GUESTS;
-
-      const storedUsers = localStorage.getItem(STORAGE_KEYS.USERS);
-      this.users = storedUsers ? JSON.parse(storedUsers) : INITIAL_USERS;
-
-      const storedAudit = localStorage.getItem(STORAGE_KEYS.AUDIT);
-      this.auditLogs = storedAudit ? JSON.parse(storedAudit) : INITIAL_AUDIT;
-
       const storedUserId = localStorage.getItem(STORAGE_KEYS.ACTIVE_USER_ID);
-      if (storedUserId && this.users.some(u => u.id === storedUserId)) {
+      if (storedUserId) {
         this.activeUserId = storedUserId;
-      } else {
-        this.activeUserId = INITIAL_USERS[0].id;
       }
-
       const storedEventId = localStorage.getItem(STORAGE_KEYS.ACTIVE_EVENT_ID);
-      if (storedEventId && this.events.some(e => e.id === storedEventId)) {
+      if (storedEventId) {
         this.activeEventId = storedEventId;
-      } else {
-        this.activeEventId = INITIAL_EVENTS[0].id;
       }
-    } catch {
-      this.events = INITIAL_EVENTS;
-      this.guests = INITIAL_GUESTS;
-      this.users = INITIAL_USERS;
-      this.auditLogs = INITIAL_AUDIT;
-      this.activeUserId = INITIAL_USERS[0].id;
-      this.activeEventId = INITIAL_EVENTS[0].id;
-    }
+    } catch {}
   }
 
   private saveToStorage() {
     try {
-      localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(this.events));
-      localStorage.setItem(STORAGE_KEYS.GUESTS, JSON.stringify(this.guests));
-      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(this.users));
-      localStorage.setItem(STORAGE_KEYS.AUDIT, JSON.stringify(this.auditLogs));
       localStorage.setItem(STORAGE_KEYS.ACTIVE_USER_ID, this.activeUserId);
       localStorage.setItem(STORAGE_KEYS.ACTIVE_EVENT_ID, this.activeEventId);
     } catch (e) {
-      console.error('Falha ao persistir no localStorage', e);
+      console.error('Falha ao persistir preferências de sessão no localStorage', e);
     }
     this.notify();
+  }
+
+  public async init() {
+    try {
+      const [remoteEvents, remoteUsers, remoteAudit] = await Promise.all([
+        api.getEvents().catch(() => []),
+        api.getUsers().catch(() => []),
+        api.getAuditLogs().catch(() => []),
+      ]);
+
+      this.events = remoteEvents || [];
+      this.users = remoteUsers || [];
+      this.auditLogs = remoteAudit || [];
+
+      if (this.events.length > 0 && !this.events.some(e => e.id === this.activeEventId)) {
+        this.activeEventId = this.events[0].id;
+      }
+      if (this.users.length > 0 && !this.users.some(u => u.id === this.activeUserId)) {
+        this.activeUserId = this.users[0].id;
+      }
+
+      if (this.activeEventId) {
+        const remoteGuests = await api.getGuests(this.activeEventId).catch(() => []);
+        this.guests = remoteGuests || [];
+      }
+
+      this.initialized = true;
+      this.notify();
+    } catch (e) {
+      console.error('Falha ao inicializar dados do PostgreSQL:', e);
+    }
+  }
+
+  public async syncWithBackend() {
+    await this.init();
+  }
+
+  public async refreshGuests(eventId?: string) {
+    const targetEventId = eventId || this.activeEventId;
+    if (!targetEventId) return;
+    try {
+      const remoteGuests = await api.getGuests(targetEventId);
+      this.guests = remoteGuests || [];
+      this.notify();
+    } catch (e) {
+      console.error('Erro ao atualizar convidados do PostgreSQL:', e);
+    }
+  }
+
+  public async refreshAudit() {
+    try {
+      const remoteAudit = await api.getAuditLogs();
+      this.auditLogs = remoteAudit || [];
+      this.notify();
+    } catch (e) {
+      console.error('Erro ao atualizar auditoria do PostgreSQL:', e);
+    }
   }
 
   public subscribe(fn: () => void) {
@@ -1396,14 +1072,8 @@ class StoreService {
   }
 
   // Reset para estado inicial limpo (útil para testes de homologação)
-  public resetToInitial() {
-    this.events = INITIAL_EVENTS;
-    this.guests = INITIAL_GUESTS;
-    this.users = INITIAL_USERS;
-    this.auditLogs = INITIAL_AUDIT;
-    this.activeUserId = INITIAL_USERS[0].id;
-    this.activeEventId = INITIAL_EVENTS[0].id;
-    this.saveToStorage();
+  public async resetToInitial() {
+    await this.init();
   }
 }
 

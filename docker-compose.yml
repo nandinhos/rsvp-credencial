@@ -26,8 +26,8 @@ services:
     container_name: rsvp_credencial_app
     restart: unless-stopped
     ports:
-      - "3000:3000"
-      - "3001:3001"
+      - "33000:3000"
+      - "33001:3001"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/rsvp_db
       PGHOST: db
@@ -37,7 +37,7 @@ services:
       PGDATABASE: rsvp_db
       PORT: 3001
       HOST: 0.0.0.0
-      VITE_API_URL: http://localhost:3001
+      VITE_API_URL: http://127.0.0.1:3001
     depends_on:
       db:
         condition: service_healthy
